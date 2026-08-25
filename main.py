@@ -1,48 +1,48 @@
-name: Deploy Frontend to GitHub Pages
+import os
+from fastapi import FastAPI, Header, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
-on:
-  push:
-    branches: [ main ]
+app = FastAPI(title="FORENSIX Backend")
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://jani2511.github.io",
+        "http://localhost:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-concurrency:
-  group: pages
-  cancel-in-progress: true
+ADMIN_KEY = os.getenv("FORENSIX_ADMIN_KEY", "CHANGE_THIS_SECRET")
 
-jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+PRIVATE_CASE_001 = {
+    "solution": "The perpetrator impersonated a delivery worker, entered after the victim opened the door, attacked the victim, and left when the legitimate delivery worker approached.",
+    "critical_evidence": ["E01", "E04", "E06", "E07", "E08"],
+    "red_herrings": ["E03"],
+}
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+class Event(BaseModel):
+    investigator: str
+    evidence_id: str
+    action: str
 
-      - name: Build project
-        run: npm run build
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
+@app.get("/api/health")
+def health():
+    return {"status": "ok"}
 
-      - name: Upload dist artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: './dist'
 
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+@app.post("/api/admin/case-001")
+def admin_case_001(x_admin_key: str = Header(default="", alias="X-Admin-Key")):
+    if x_admin_key != ADMIN_KEY:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    return PRIVATE_CASE_001
+
+
+@app.post("/api/investigation/event")
+def event(e: Event):
+    return {"accepted": True, "event": e.model_dump()}

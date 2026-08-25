@@ -1,18 +1,48 @@
-from fastapi import FastAPI, Header, HTTPException
-from pydantic import BaseModel
-import os
-app=FastAPI(title='FORENSIX Backend')
-ADMIN_KEY=os.getenv('FORENSIX_ADMIN_KEY','CHANGE_THIS_SECRET')
-PRIVATE_CASE_001={'solution':'The perpetrator impersonated a delivery worker, entered after the victim opened the door, attacked the victim, and left when the legitimate delivery worker approached.','critical_evidence':['E01','E04','E06','E07','E08'],'red_herrings':['E03']}
-class Event(BaseModel):
-    investigator:str
-    evidence_id:str
-    action:str
-@app.get('/api/health')
-def health(): return {'status':'ok'}
-@app.post('/api/admin/case-001')
-def admin_case_001(x_admin_key:str=Header(default='')):
-    if x_admin_key!=ADMIN_KEY: raise HTTPException(status_code=403,detail='Forbidden')
-    return PRIVATE_CASE_001
-@app.post('/api/investigation/event')
-def event(e:Event): return {'accepted':True,'event':e.model_dump()}
+name: Deploy Frontend to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload dist artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

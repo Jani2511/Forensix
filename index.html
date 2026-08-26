@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FORENSIX PRO - Multi-Track 3D Forensic Intelligence Suite</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Orbitron:wght@400;600;700;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="damageFlash"></div>
+<canvas id="bg3dCanvas"></canvas>
+
+<header id="portalHeader">
+  <div class="portal-brand" onclick="window.switchPortalTab('home')">
+    FORENSIX <span>PRO</span>
+  </div>
+  <nav class="portal-nav-tabs">
+    <button class="portal-tab-btn active" id="btnTabHome" onclick="window.switchPortalTab('home')">🏠 HOME</button>
+    <button class="portal-tab-btn" id="btnTabAcademy" onclick="window.switchPortalTab('academy')">📖 LEARN EVIDENCE</button>
+    <button class="portal-tab-btn" id="btnTabSimulator" onclick="window.switchPortalTab('simulator')">🎮 3D SIMULATOR</button>
+    <button class="portal-tab-btn court-tab" id="btnTabCourt" onclick="window.switchPortalTab('court')">⚖️ COURTROOM TRIAL</button>
+    <button class="auth-nav-btn" id="btnAuthNav" onclick="window.openAuthModal('login')">🔐 LOGIN</button>
+  </nav>
+</header>
+
+<!-- PAGE 1: HOME VIEW -->
+<div id="homeView">
+  <div class="home-hero-card">
+    <div style="font-family:var(--font-mono); font-size:0.8rem; color:var(--neon-cyan); letter-spacing:2px; margin-bottom:8px;">
+      ISO/IEC 17025 &amp; NIST COMPLIANT CRIMINALISTIC SUITE
+    </div>
+    <h1>MULTI-TRACK 3D FORENSIC INTELLIGENCE</h1>
+    <p>Professional crime scene reconstruction and forensic training system. Secure perimeters, deploy ABFO No. 2 photographic scaling, recover trace DNA, and present expert witness testimony under judicial cross-examination.</p>
+    
+    <div class="home-feature-pills">
+      <div class="home-pill">
+        <b>🔬 6 Dynamic 3D Scenes</b>
+        <span>Flat, Warehouse, Office, Clinic, Garage &amp; Lab</span>
+      </div>
+      <div class="home-pill">
+        <b>👥 Role-Locked Specialists</b>
+        <span>Photo Commander, Pathologist, Ballistics &amp; Latents</span>
+      </div>
+      <div class="home-pill">
+        <b>⚖️ Multi-Level Trials</b>
+        <span>5, 9, and 15 Questions • 80% Conviction Threshold</span>
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+      <button class="cyan" style="width:auto; padding:12px 28px;" onclick="window.quickDemoLogin()">⚡ ENTER 3D SIMULATOR</button>
+      <button class="gray" style="width:auto; padding:12px 22px;" onclick="window.switchPortalTab('court')">⚖️ GO TO COURT TRIAL</button>
+      <button class="green" style="width:auto; padding:12px 22px;" onclick="window.switchPortalTab('academy')">📖 LEARN EVIDENCE</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 2: EVIDENCE ACADEMY -->
+<div id="academyView" class="hidden">
+  <div class="academy-hero">
+    <h1>FORENSIC EVIDENCE ENCYCLOPEDIA</h1>
+    <p>Standardized collection, packaging, and preservation guidelines compiled from ISO/IEC 17025, NIST, and NIJ Special Report NCJ 178280.</p>
+  </div>
+
+  <div class="domain-tab-bar">
+    <button class="domain-btn active" onclick="window.switchDomain('biological')">🧬 BIOLOGICAL &amp; DNA (20)</button>
+    <button class="domain-btn" onclick="window.switchDomain('ballistics')">🎯 BALLISTICS &amp; WEAPONS (20)</button>
+    <button class="domain-btn" onclick="window.switchDomain('latents')">🖐️ PRINTS &amp; IMPRESSIONS (20)</button>
+    <button class="domain-btn" onclick="window.switchDomain('trace')">🔬 TRACE, TOXICOLOGY &amp; DIGITAL (20)</button>
+  </div>
+
+  <div class="domain-header-bar">
+    <div id="domainInfoText" style="font-size:0.95rem; color:#8da2c0;">
+      Displaying authorized recovery protocols for <b style="color:var(--neon-cyan);">Biological &amp; DNA Evidence</b>.
+    </div>
+    <input type="text" id="academySearchInput" placeholder="🔍 Search evidence or tool..." oninput="window.filterAcademySearch()" style="width:260px; font-size:0.9rem; padding:6px 10px;">
+  </div>
+
+  <div class="academy-grid" id="academyGrid"></div>
+</div>
+
+<!-- PAGE 3: 3D SIMULATOR VIEWPORT -->
+<div id="simulatorView" class="hidden">
+  <canvas id="c3d"></canvas>
+  <div id="crosshair"></div>
+  <div id="warnBox"></div>
+
+  <div id="memoryBarContainer" class="hidden">
+    <div id="memoryBar"></div>
+    <div style="display:flex; justify-content:space-between; width:100%; margin-top:4px; font-size:0.75rem; color:var(--neon-cyan); font-weight:700;">
+      <span>SAFE APPROACH WALKWAY:</span>
+      <span id="memSec">5s</span>
+    </div>
+  </div>
+
+  <div id="cameraViewfinder">
+    <div style="position:absolute; top:42px; left:42px; width:24px; height:24px; border:3px solid var(--neon-cyan); border-right:0; border-bottom:0;"></div>
+    <div style="position:absolute; top:42px; right:42px; width:24px; height:24px; border:3px solid var(--neon-cyan); border-left:0; border-bottom:0;"></div>
+    <div style="position:absolute; bottom:42px; left:42px; width:24px; height:24px; border:3px solid var(--neon-cyan); border-right:0; border-top:0;"></div>
+    <div style="position:absolute; bottom:42px; right:42px; width:24px; height:24px; border:3px solid var(--neon-cyan); border-left:0; border-top:0;"></div>
+  </div>
+
+  <div id="squadRosterBar" class="hidden">
+    <div class="roster-card active" id="card0" onclick="window.switchPlayerEntity(0)">
+      <span class="roster-num">[1]</span>
+      <div class="roster-info">
+        <div class="roster-name" id="rn0">Det. Miller</div>
+        <div class="roster-role">📸 Lead Commander • Camera/Log</div>
+      </div>
+    </div>
+    <div class="roster-card" id="card1" onclick="window.switchPlayerEntity(1)">
+      <span class="roster-num">[2]</span>
+      <div class="roster-info">
+        <div class="roster-name" id="rn1">Dr. Thorne</div>
+        <div class="roster-role">🩺 Bio Examiner • UV Luminol</div>
+      </div>
+    </div>
+    <div class="roster-card" id="card2" onclick="window.switchPlayerEntity(2)">
+      <span class="roster-num">[3]</span>
+      <div class="roster-info">
+        <div class="roster-name" id="rn2">Agent Vance</div>
+        <div class="roster-role">🎯 Ballistics • Trajectory/GSR</div>
+      </div>
+    </div>
+    <div class="roster-card" id="card3" onclick="window.switchPlayerEntity(3)">
+      <span class="roster-num">[4]</span>
+      <div class="roster-info">
+        <div class="roster-name" id="rn3">Tech Ramos</div>
+        <div class="roster-role">🖐️ Latent Expert • 450nm ALS</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="hud" class="hidden">
+    <div class="hud-top">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div class="hud-badge">FORENSIX PRO</div>
+        <select id="hudSceneQuickSwitcher" onchange="window.quickSwitchSceneFromHUD(this.value)" style="width:auto; padding:3px 8px; font-size:0.75rem; background:#101724; color:var(--neon-cyan); border:1px solid var(--neon-cyan);">
+          <option value="cadet_6">Studio Flat (Cadet 6)</option>
+          <option value="cadet_9">Warehouse (Cadet 9)</option>
+          <option value="cadet_12">Office Suite (Cadet 12)</option>
+          <option value="advanced_6">Private Clinic (Specialist 6)</option>
+          <option value="advanced_9">Parking Garage (Specialist 9)</option>
+          <option value="advanced_12">Penthouse Lab (Specialist 12)</option>
+        </select>
+      </div>
+      <div style="display:flex; align-items:center;">
+        <div class="hud-stat" id="activeOfficerStat">ACTIVE: <span id="currentOfficerBadge" style="color:var(--neon-cyan);">Det. Miller</span></div>
+        <div class="hud-stat" id="gloveStat">GLOVES: <span id="gloveStatus" style="color:var(--neon-green);">STERILE</span></div>
+        <div class="hud-stat">QUOTA: <span id="evCount">0/6</span></div>
+        <div class="hud-stat">SCORE: <span id="scoreEl" style="color:var(--neon-green);">0</span></div>
+        <div class="hud-stat" id="strikeStat">STRIKES: <span id="strikeCount" style="color:var(--neon-red);">0/3</span></div>
+        <button class="tool-btn" style="background:rgba(0,210,255,0.2); border-color:var(--neon-cyan); color:var(--neon-cyan); font-size:0.8rem; padding:5px 10px; margin-left:6px;" onclick="window.toggleActivityLogModal()">📜 LOG</button>
+        <button class="tool-btn" id="btnMurderBoardTop" style="background:linear-gradient(135deg, rgba(0,255,136,0.2) 0%, rgba(0,210,255,0.3) 100%); border-color:var(--neon-green); color:var(--neon-green); font-size:0.8rem; padding:5px 10px; margin-left:6px;" onclick="window.openMurderBoard()">📌 DEDUCTION</button>
+        <button class="tool-btn" id="btnSubmitCadetTop" style="display:none; background:linear-gradient(135deg, rgba(0,255,136,0.2) 0%, rgba(0,210,255,0.3) 100%); border-color:var(--neon-green); color:var(--neon-green); font-size:0.8rem; padding:5px 10px; margin-left:6px;" onclick="window.finishGame()">📋 SUBMIT</button>
+      </div>
+    </div>
+    
+    <div class="hud-toolbar">
+      <button class="tool-btn" id="btnFlashlight" onclick="window.toggleFlashlight()">🔦 FLASHLIGHT [L]</button>
+      <button class="tool-btn" id="btnUV" onclick="window.toggleUV()">🧪 UV LUMINOL [F] (Dr. Thorne)</button>
+      <button class="tool-btn" id="btnALS" onclick="window.toggleALS()">🕶️ 450nm ALS [B] (Tech Ramos)</button>
+      <button class="tool-btn" id="btnGrid" onclick="window.cycleSearchGrid()">📐 GRID</button>
+      <button class="tool-btn" id="btnGlove" onclick="window.changeGloves()">🧤 GLOVES [G]</button>
+      <button class="tool-btn" id="btnPhoto" onclick="window.captureScenePhoto()">📸 ABFO PHOTO [C] (Det. Miller)</button>
+      <button class="tool-btn" id="btnPCR" onclick="window.openPCRModal()">🧬 PCR LAB</button>
+      <button class="tool-btn" id="btnBPA" onclick="window.openBPAModal()">🩸 BPA</button>
+      <button class="tool-btn gray" onclick="window.togglePointerLock()">🎯 LOCK MOUSE</button>
+    </div>
+  </div>
+
+  <div id="activityLogModal">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid var(--border-glow); padding-bottom:4px;">
+      <b style="font-family:'Orbitron'; font-size:0.85rem; color:var(--neon-cyan);">CRIME SCENE CHRONOLOGICAL FEED</b>
+      <span style="cursor:pointer; color:#8da2c0; font-size:0.85rem;" onclick="window.toggleActivityLogModal()">✕</span>
+    </div>
+    <div class="log-feed-box" id="activityFeedContent"></div>
+  </div>
+
+  <div id="virtualDpad" class="hidden">
+    <div></div>
+    <button class="dpad-btn" onmousedown="keys.w=true" onmouseup="keys.w=false" ontouchstart="keys.w=true" ontouchend="keys.w=false">▲</button>
+    <div></div>
+    <button class="dpad-btn" onmousedown="keys.a=true" onmouseup="keys.a=false" ontouchstart="keys.a=true" ontouchend="keys.a=false">◀</button>
+    <button class="dpad-btn" onmousedown="keys.s=true" onmouseup="keys.s=false" ontouchstart="keys.s=true" ontouchend="keys.s=false">▼</button>
+    <button class="dpad-btn" onmousedown="keys.d=true" onmouseup="keys.d=false" ontouchstart="keys.d=true" ontouchend="keys.d=false">▶</button>
+  </div>
+</div>
+
+<!-- OVERLAYS & MODALS -->
+<div id="authScreen" class="screen hidden">
+  <div class="auth-card">
+    <div class="auth-toggle-bar">
+      <button class="auth-toggle-btn active" id="btnAuthModeLogin" onclick="window.setAuthMode('login')">LOGIN</button>
+      <button class="auth-toggle-btn" id="btnAuthModeSignup" onclick="window.setAuthMode('signup')">SIGN UP</button>
+    </div>
+    <div style="text-align:left; margin-bottom:10px;">
+      <label style="font-size:0.85rem; font-weight:700; color:#a4c2e6;">INVESTIGATOR ID / EMAIL</label>
+      <input id="loginEmail" type="text" value="detective.miller@gmail.com" style="margin-top:3px;">
+    </div>
+    <div style="text-align:left; margin-bottom:12px;">
+      <label style="font-size:0.85rem; font-weight:700; color:#a4c2e6;">SECURE PASSCODE</label>
+      <input id="loginPass" type="password" value="Forensix#2024" style="margin-top:3px;">
+    </div>
+    <div id="signupSquadConfig" style="display:none;">
+      <p style="font-size:0.82rem; font-weight:700; color:var(--neon-cyan); margin-top:6px; text-align:left;">SQUAD DESIGNATIONS:</p>
+      <div class="squad-grid">
+        <div class="squad-member-box"><div class="squad-role-tag">👑 [1] COMMANDER</div><input id="sq1" value="Det. Miller"></div>
+        <div class="squad-member-box"><div class="squad-role-tag">🩺 [2] BIO EXAMINER</div><input id="sq2" value="Dr. Aris Thorne"></div>
+        <div class="squad-member-box"><div class="squad-role-tag">🎯 [3] BALLISTICS</div><input id="sq3" value="Agent Marcus Vance"></div>
+        <div class="squad-member-box"><div class="squad-role-tag">🔬 [4] LATENT TECH</div><input id="sq4" value="Tech Elena Ramos"></div>
+      </div>
+    </div>
+    <p id="authFeedback" style="font-weight:700; font-size:0.85rem; margin-top:10px; min-height:18px;"></p>
+    <div style="display:flex; gap:10px; margin-top:10px;">
+      <button class="gray" style="width:auto; padding:10px 18px;" onclick="window.closeAuthModal()">BACK</button>
+      <button class="cyan" id="btnAuthSubmit" onclick="window.handleSecureAuthSubmit()">LOGIN &amp; ENTER</button>
+      <button class="green" style="width:auto; padding:10px 14px;" onclick="window.quickDemoLogin()">⚡ DEMO</button>
+    </div>
+  </div>
+</div>
+
+<div id="modeSelectScreen" class="screen hidden">
+  <div class="auth-card" style="width:720px;">
+    <button class="btn-back-nav" onclick="window.navigateBack()">◀ BACK</button>
+    <h2>SELECT INVESTIGATION TRACK</h2>
+    <p style="font-size:0.9rem; color:#8da2c0; margin-bottom:12px;">Choose operational clearance tier</p>
+    <div class="mode-grid">
+      <div class="mode-card" onclick="window.selectExperienceTrack('beginner')">
+        <div style="font-family:'Orbitron'; font-size:0.72rem; font-weight:800; padding:3px 8px; border-radius:4px; display:inline-block; margin-bottom:6px; background:rgba(0,210,255,0.2); border:1px solid var(--neon-cyan); color:var(--neon-cyan);">CADET TRACK</div>
+        <h3 style="color:#ffffff; font-size:1.1rem; margin-bottom:4px;">Field Cadet Division</h3>
+        <p style="font-size:0.82rem; color:#8da2c0; line-height:1.4;">3 scenes: Studio Flat, Warehouse, and Office. Role-locked tools, standard protocols &amp; contamination strikes.</p>
+        <button class="cyan" style="margin-top:10px; font-size:0.75rem; padding:7px 12px;">ENTER CADET TRACK</button>
+      </div>
+      <div class="mode-card specialist" onclick="window.selectExperienceTrack('advanced')">
+        <div style="font-family:'Orbitron'; font-size:0.72rem; font-weight:800; padding:3px 8px; border-radius:4px; display:inline-block; margin-bottom:6px; background:rgba(0,255,136,0.2); border:1px solid var(--neon-green); color:var(--neon-green);">EXPERT SPECIALIST</div>
+        <h3 style="color:#ffffff; font-size:1.1rem; margin-bottom:4px;">Forensic Specialist Division</h3>
+        <p style="font-size:0.82rem; color:#8da2c0; line-height:1.4;">3 scenes: Clinic, Garage, and Penthouse. Strict glove sterility, ALS prints, UV blood, and Murder Board.</p>
+        <button class="green" style="margin-top:10px; font-size:0.75rem; padding:7px 12px;">ENTER SPECIALIST TRACK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="levelScreen" class="screen hidden">
+  <div class="auth-card" style="width:520px;">
+    <button class="btn-back-nav" onclick="window.navigateBack()">◀ BACK</button>
+    <h2>SELECT CASE DIFFICULTY &amp; SCENE</h2>
+    <div id="cadetLevelButtons">
+      <button class="cyan" onclick="window.pickLevel(6)">BEGINNER — Studio Flat (6 Ev)</button>
+      <button onclick="window.pickLevel(9)">INTERMEDIATE — Loading Warehouse (9 Ev + UV)</button>
+      <button onclick="window.pickLevel(12)">ADVANCED — Office Suite (12 Ev + Decoys + ALS)</button>
+    </div>
+    <div id="specialistLevelButtons" style="display:none;">
+      <button class="green" onclick="window.pickLevel(6)">BEGINNER — Private Clinic (6 Ev + UV Blood)</button>
+      <button onclick="window.pickLevel(9)">INTERMEDIATE — Parking Garage (9 Ev + Stash + ALS)</button>
+      <button onclick="window.pickLevel(12)">ADVANCED — Penthouse Lab (12 Ev + Desk Dagger + UV/ALS)</button>
+    </div>
+  </div>
+</div>
+
+<div id="caseScreen" class="screen hidden">
+  <div style="max-width:760px; text-align:left; background:var(--panel-bg); padding:22px; border-radius:8px; border:1px solid var(--border-glow); line-height:1.6; position:relative;">
+    <button class="btn-back-nav" onclick="window.navigateBack()">◀ BACK</button>
+    <h2 style="color:var(--neon-red); margin-top:0; font-size:1.4rem;" id="briefingCaseTitle">CASE FILE</h2>
+    <div id="briefingSceneDetails"></div>
+    <hr style="border:0; border-top:1px solid #2a3548; margin:10px 0;">
+    <h3 style="color:var(--neon-yellow); font-family:'Orbitron'; font-size:0.95rem; margin-bottom:6px;">⚠️ OPERATIONAL PROTOCOLS &amp; DECOY WARNING:</h3>
+    <ul style="margin-left:22px; font-size:0.88rem; color:#c7d6eb;">
+      <li><b>Role Restrictions:</b> Only <b>Det. Miller</b> clicks ABFO photos; only <b>Dr. Thorne</b> activates UV light; only <b>Tech Ramos</b> uses 450nm ALS.</li>
+      <li><b>Photography Points:</b> Gate view (1 pt), 4 room corners (1 pt each), visible evidence with ABFO scale (1 pt each), hidden evidence (3 pts each).</li>
+      <li><b>Decoy Warning:</b> Innocent household/office objects yield point deductions if logged as evidence.</li>
+    </ul>
+    <br>
+    <button class="cyan" style="width:280px;" onclick="window.startGame()">ENTER CRIME SCENE</button>
+  </div>
+</div>
+
+<div id="securityModal" class="modal-window" style="width:720px;">
+  <h2 style="color:var(--neon-yellow); font-size:1.3rem; margin-bottom:4px;">⚠️ STEP 1: SITE-SPECIFIC SECURITY CHECKPOINT</h2>
+  <p style="font-size:0.88rem; color:#8da2c0; margin-bottom:12px;" id="secPromptText">Select the appropriate perimeter isolation protocol:</p>
+  <div style="text-align:left; display:flex; flex-direction:column; gap:8px;" id="secOptionBox"></div>
+  <p id="secFeedback" style="font-weight:700; font-size:0.85rem; margin-top:8px; min-height:18px;"></p>
+</div>
+
+<div id="killerNoteModal" class="modal-window" style="width:600px;">
+  <h2 style="color:var(--neon-red); font-size:1.35rem; margin-bottom:6px;">📜 RECOVERED PERSONAL JOURNAL / NOTE</h2>
+  <div style="background:#130e0a; border:2px solid #5a3c20; border-radius:6px; padding:18px; font-family:'Cinzel', serif; font-size:1.05rem; color:#f5deb3; line-height:1.6; text-align:left; white-space:pre-line;" id="killerNoteContent"></div>
+  <div style="display:flex; justify-content:flex-end; margin-top:14px;">
+    <button class="cyan" style="width:auto; padding:8px 20px;" onclick="window.closeKillerNote()">CLOSE JOURNAL</button>
+  </div>
+</div>
+
+<div id="modal" class="modal-window">
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <h2 id="evName" style="color:var(--neon-cyan); margin-bottom:4px; font-size:1.35rem;">EVIDENCE INSPECTION</h2>
+    <div id="exceptionBadge" style="font-family:var(--font-mono); font-size:0.82rem; background:rgba(0,255,136,0.15); border:1px solid var(--neon-green); color:var(--neon-green); padding:3px 8px; border-radius:4px;">EXCEPTIONS REMAINING: 2/2</div>
+  </div>
+  <div class="modal-grid">
+    <div id="evidence3dView"><div class="view-hint">DRAG TO ROTATE 3D SPECIMEN</div></div>
+    <div class="modal-fields">
+      <label>COLLECTION METHOD / TOOL:</label><select id="toolSel"></select>
+      <div id="doubleSwabOption" style="display:none; margin: 4px 0; background:rgba(0,210,255,0.1); padding:6px; border-radius:4px; border:1px solid #00d2ff;">
+        <label style="margin:0; font-size:0.8rem; color:#fff; cursor:pointer;">
+          <input type="checkbox" id="chkDoubleSwab" style="display:inline-block; width:auto; margin-right:6px;"> APPLY DOUBLE-SWAB METHOD (Wet Swab #1 + Dry Swab #2)
+        </label>
+      </div>
+      <div id="chemTestSection" style="display:none;">
+        <label>PRESUMPTIVE CHEMICAL REAGENT:</label>
+        <div class="test-tube-box">
+          <div class="vial-sample"><div class="vial-liquid" id="vialLiquid"></div></div>
+          <div style="flex:1;">
+            <select id="chemTestSel" onchange="window.runPresumptiveTest()">
+              <option value="none">No Field Chemical Test Required</option>
+              <option value="km">Kastle-Meyer Test (Phenolphthalein + H2O2)</option>
+              <option value="rhodizonate">Sodium Rhodizonate (Lead / GSR Test)</option>
+              <option value="fuming">Cyanoacrylate / Black Magnetic Powder</option>
+            </select>
+            <span id="chemTestFeedback" style="font-size:0.8rem; font-weight:700; color:#8da2c0;">Select reagent</span>
+          </div>
+        </div>
+      </div>
+      <label>PRESERVATION PACKAGING:</label><select id="packSel"></select>
+      <label>RELEVANCE ASSESSMENT:</label>
+      <select id="relSel">
+        <option value="yes">YES — Crime Relevant Evidence</option>
+        <option value="no">NO — Everyday Irrelevant Decoy</option>
+      </select>
+      <label>LOGGED BY OFFICER:</label><select id="custodyBy"></select>
+      <p id="evResult" style="font-weight:bold; margin:4px 0; font-size:0.88rem;"></p>
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:4px;">
+        <button id="btnRetryException" class="gray" style="display:none; padding:8px 14px; margin:0; width:auto; border-color:var(--neon-yellow); color:var(--neon-yellow);" onclick="window.useRetryException()">🔄 USE EXCEPTION TO RETRY</button>
+        <button class="gray" style="padding:8px 14px; margin:0; width:auto;" onclick="window.closeModal()">CANCEL</button>
+        <button id="btnSubmitEv" class="cyan" style="padding:8px 18px; margin:0; width:auto;" onclick="window.submitEv()">LOG EVIDENCE</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="autopsyModal" class="modal-window">
+  <h2 style="color:var(--neon-red); margin-bottom:4px; font-size:1.35rem;" id="autopsyTitle">POST-MORTEM EXAMINATION</h2>
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px; text-align:left; margin-top:8px;">
+    <div style="background:#0c121d; border:1px solid #23354c; padding:12px; border-radius:6px;">
+      <h3 style="color:var(--neon-cyan); font-size:0.95rem; margin-bottom:4px;">1. THERMOMETRY &amp; ALGOR MORTIS</h3>
+      <p style="font-size:0.85rem; color:#8da2c0;">Hepatic Core Temp: <b style="color:#ffffff;" id="pathTemp">31.8°C (89.2°F)</b></p>
+      <p style="font-size:0.85rem; color:#8da2c0;">Ambient Room Temp: <b style="color:#ffffff;">22.0°C (71.6°F)</b></p>
+      <p style="font-size:0.8rem; color:var(--neon-yellow); margin-top:4px;" id="pathPMI">PMI Formula: $(37^\circ\text{C} - 31.8^\circ\text{C}) / 1.5^\circ\text{C/hr} \approx 3.47\text{ hrs}$</p>
+    </div>
+    <div style="background:#0c121d; border:1px solid #23354c; padding:12px; border-radius:6px;">
+      <h3 style="color:var(--neon-cyan); font-size:0.95rem; margin-bottom:4px;">2. LIVOR &amp; RIGOR MORTIS</h3>
+      <p style="font-size:0.85rem; color:#8da2c0;">Lividity: <b style="color:#ffffff;">Fixed dorsal contact blanching</b></p>
+      <p style="font-size:0.85rem; color:#8da2c0;">Rigor: <b style="color:#ffffff;">Moderate rigidity in neck and jaw</b></p>
+      <p style="font-size:0.8rem; color:var(--neon-green); margin-top:4px;">Estimated PMI: 3 to 5 Hours Prior to Discovery</p>
+    </div>
+  </div>
+  <div style="background:#0c121d; border:1px solid #23354c; padding:12px; border-radius:6px; margin-top:10px; text-align:left;">
+    <h3 style="color:var(--neon-cyan); font-size:0.95rem; margin-bottom:4px;">3. EXTERNAL TRAUMA ASSESSMENT</h3>
+    <p style="font-size:0.88rem; color:#cbd7e6;" id="pathTrauma">Trauma assessment loaded dynamically.</p>
+  </div>
+  <div style="display:flex; justify-content:flex-end; margin-top:12px;">
+    <button class="cyan" style="width:auto; padding:8px 24px;" onclick="window.closeAutopsy()">LOG PATHOLOGY FINDINGS</button>
+  </div>
+</div>
+
+<div id="pcrModal" class="modal-window">
+  <h2 style="color:var(--neon-green); margin-bottom:4px; font-size:1.35rem;">PORTABLE PCR THERMAL CYCLER</h2>
+  <div style="text-align:left;">
+    <p style="font-size:0.88rem; color:#8da2c0;">Cofactor: <b style="color:var(--neon-cyan);">$\text{Mg}^{2+}$ (Magnesium Ions)</b> • Automated Thermal Cycling</p>
+    <div style="background:#0b121e; border:1px solid #223854; border-radius:6px; padding:12px; margin-top:10px;">
+      <div id="pcrStep1" class="pcr-step-badge" style="display:inline-block; padding:4px 8px; border-radius:4px; font-family:var(--font-mono); font-size:0.85rem; margin:2px 4px; background:#142236; border:1px solid #284466;">1. Denaturation (94°C)</div>
+      <div id="pcrStep2" class="pcr-step-badge" style="display:inline-block; padding:4px 8px; border-radius:4px; font-family:var(--font-mono); font-size:0.85rem; margin:2px 4px; background:#142236; border:1px solid #284466;">2. Annealing (55°C)</div>
+      <div id="pcrStep3" class="pcr-step-badge" style="display:inline-block; padding:4px 8px; border-radius:4px; font-family:var(--font-mono); font-size:0.85rem; margin:2px 4px; background:#142236; border:1px solid #284466;">3. Extension (72°C)</div>
+      <div style="margin-top:10px; font-family:var(--font-mono); font-size:0.85rem; color:#00ff88;" id="pcrStatus">Status: Awaiting sample amplification...</div>
+    </div>
+    <div style="background:#0c121d; border:1px solid #23354c; padding:10px; border-radius:6px; margin-top:10px;">
+      <b style="color:var(--neon-cyan); font-size:0.85rem;">STR LOCI COMPARISON:</b>
+      <p style="font-size:0.82rem; color:#cad8ea; margin-top:4px;" id="pcrSuspectMatch">Touch DNA matches suspect. Likelihood Ratio $> 10^9$.</p>
+    </div>
+  </div>
+  <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+    <button class="gray" style="width:auto; padding:8px 16px;" onclick="window.closePCRModal()">CLOSE</button>
+    <button class="green" style="width:auto; padding:8px 20px;" onclick="window.runPCRSimulation()">AMPLIFY DNA</button>
+  </div>
+</div>
+
+<div id="bpaModal" class="modal-window">
+  <h2 style="color:var(--neon-red); margin-bottom:4px; font-size:1.35rem;">3D BLOODSTAIN PATTERN ANALYSIS (BPA)</h2>
+  <div style="text-align:left; background:#0c121d; border:1px solid #23354c; padding:12px; border-radius:6px; margin-top:8px;">
+    <p style="font-size:0.85rem; color:#8da2c0;">Measured Droplet: Width ($W$): <b>4.2 mm</b> &nbsp;|&nbsp; Length ($L$): <b>8.4 mm</b></p>
+    <p style="font-size:0.85rem; color:var(--neon-yellow); margin-top:6px;">Impact Angle: $\alpha = \arcsin(W/L) = \arcsin(0.5) = 30.0^\circ$</p>
+    <p style="font-size:0.82rem; color:#7ee787; margin-top:6px;">Origin of force converged near the central area, corroborating an upright struggle.</p>
+  </div>
+  <div style="display:flex; justify-content:flex-end; margin-top:12px;">
+    <button class="cyan" style="width:auto; padding:8px 24px;" onclick="window.closeBPAModal()">CONFIRM 3D BPA TRAJECTORY</button>
+  </div>
+</div>
+
+<div id="murderBoardScreen" class="screen hidden">
+  <h2>INVESTIGATION MURDER BOARD &amp; FINAL DEDUCTION</h2>
+  <p style="color:#8da2c0; font-size:0.95rem; margin-bottom:10px;">Synthesize physical evidence and connect primary crime factors</p>
+  <div class="murder-board-grid">
+    <div class="cork-card"><div class="cork-pin"></div><b style="color:var(--neon-cyan); font-size:0.85rem;">1. PRIME SUSPECT</b><select id="deductSuspect" style="margin-top:8px; font-size:0.85rem;"></select></div>
+    <div class="cork-card"><div class="cork-pin"></div><b style="color:var(--neon-cyan); font-size:0.85rem;">2. PRIMARY WEAPON</b><select id="deductWeapon" style="margin-top:8px; font-size:0.85rem;"></select></div>
+    <div class="cork-card"><div class="cork-pin"></div><b style="color:var(--neon-cyan); font-size:0.85rem;">3. CONFIRMED MOTIVE</b><select id="deductMotive" style="margin-top:8px; font-size:0.85rem;"></select></div>
+    <div class="cork-card"><div class="cork-pin"></div><b style="color:var(--neon-cyan); font-size:0.85rem;">4. POINT OF ACCESS</b><select id="deductEntry" style="margin-top:8px; font-size:0.85rem;"></select></div>
+  </div>
+  <div style="display:flex; gap:12px; width:450px;">
+    <button class="gray" onclick="window.showSimulatorScreen('')">RETURN TO 3D SCENE</button>
+    <button class="cyan" onclick="window.submitMurderBoard()">CONFIRM DEDUCTION &amp; SUBMIT</button>
+  </div>
+</div>
+
+<div id="gameover" class="screen hidden">
+  <h1 style="color:var(--neon-red);">SCENE COMPROMISED</h1>
+  <p style="font-size:1.25rem; margin:15px; max-width:550px;">Internal Affairs has terminated scene access due to contamination infractions.</p>
+  <button class="cyan" style="width:260px;" onclick="location.reload()">RE-EXAMINE CASE</button>
+</div>
+
+<div id="final" class="screen hidden">
+  <h2>INVESTIGATION DOSSIER &amp; COMPREHENSIVE REPORT</h2>
+  <div class="report-container" id="reportContent"></div>
+  <div>
+    <button class="cyan" style="width:auto; margin-right:10px;" onclick="window.downloadReport()">DOWNLOAD OFFICIAL DOSSIER (.TXT)</button>
+    <button class="gray" style="width:auto; margin-right:10px;" onclick="window.switchPortalTab('court')">PROCEED TO COURT TRIAL ⚖️</button>
+    <button class="gray" style="width:auto;" onclick="location.reload()">PLAY AGAIN</button>
+  </div>
+</div>
+
+<div id="courtroomView" class="hidden">
+  <div class="court-container">
+    <div class="court-header">
+      <div>
+        <h1 id="courtCaseTitle">SUPERIOR COURT OF JUSTICE — TRIAL</h1>
+        <p style="font-size:0.88rem; color:#a89674;" id="courtCaseSubtitle">SELECT TRIAL LEVEL BELOW</p>
+      </div>
+      <div class="juror-meter-box">
+        <span style="font-family:'Cinzel', serif; font-size:0.82rem; color:var(--gold-court); font-weight:700;">JURY CONVICTION ACCURACY:</span>
+        <div class="juror-bar"><div class="juror-fill" id="jurorConfidenceBar"></div></div>
+        <span id="jurorPercent" style="font-family:var(--font-mono); font-weight:700; color:#fff;">100%</span>
+      </div>
+    </div>
+    <div class="court-division-header">CADET DIVISION CASE TRIALS:</div>
+    <div class="court-level-bar">
+      <button class="court-lvl-btn active" onclick="window.switchCourtLevel('cadet_6')">Studio Flat (5 Qs)</button>
+      <button class="court-lvl-btn" onclick="window.switchCourtLevel('cadet_9')">Loading Warehouse (9 Qs)</button>
+      <button class="court-lvl-btn" onclick="window.switchCourtLevel('cadet_12')">Corporate Office (15 Qs)</button>
+    </div>
+    <div class="court-division-header">SPECIALIST DIVISION CASE TRIALS:</div>
+    <div class="court-level-bar">
+      <button class="court-lvl-btn" onclick="window.switchCourtLevel('advanced_6')">Private Clinic (5 Qs)</button>
+      <button class="court-lvl-btn" onclick="window.switchCourtLevel('advanced_9')">Parking Garage (9 Qs)</button>
+      <button class="court-lvl-btn" onclick="window.switchCourtLevel('advanced_12')">Penthouse Lab (15 Qs)</button>
+    </div>
+    <div class="dialogue-stage">
+      <div class="stand-visual">
+        <div class="stand-avatar">👨‍⚖️</div>
+        <b style="font-family:'Cinzel', serif; color:var(--gold-court); display:block;">HON. JUDGE V. CHOUDHARY</b>
+        <span style="font-size:0.8rem; color:#8da2c0;">Presiding Magistrate</span>
+        <hr style="border:0; border-top:1px solid #3d2e18; margin:10px 0;">
+        <div style="font-size:0.82rem; color:#c5b494; text-align:left; line-height:1.4;">
+          <b>WITNESS ON STAND:</b><br><span id="courtWitnessName" style="color:#fff;">Det. Miller (Lead Investigator)</span>
+        </div>
+      </div>
+      <div class="dialogue-main">
+        <div class="judge-box" id="judgeDialogue">"Lead Investigator, the Court is in session. The Defense challenges your forensic recoveries, chain of custody, and presumptive testing. State your testimony under oath."</div>
+        <div class="question-prompt" id="courtQuestionPrompt"></div>
+        <div class="witness-options" id="witnessOptionsBox"></div>
+        <div id="courtFeedbackText" style="font-weight:700; font-size:0.88rem; min-height:20px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
